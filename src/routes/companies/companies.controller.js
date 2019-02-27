@@ -9,6 +9,7 @@ const companiesController = (req, res) => {
             data
         })
     })
+    .catch (error => console.error('companies data error', error));
 };
 
 module.exports = {
