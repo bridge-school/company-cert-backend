@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 // const admin = require("firebase-admin");
+const bodyParser = require('body-parser');
 
 const router = require('./api');
 const { logger } = require('./utils/logger');
@@ -15,6 +16,15 @@ const port = process.env.PORT || 8081;
 logger.info('🤖 Initializing middleware');
 
 app.use(morgan('tiny', { stream: logger.stream }));
+
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(
+  bodyParser.urlencoded({
+    // to support URL-encoded bodies
+    extended: true
+  })
+);
+
 app.use('/', router);
 app.use(errorHandler);
 
