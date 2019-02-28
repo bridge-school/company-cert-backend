@@ -3,7 +3,8 @@ const serviceAccount = require('../../firebase-credentials.json');
 
 // initialize firebase store
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://company-cert.firebaseio.com'
 });
 
 const db = admin.firestore();
