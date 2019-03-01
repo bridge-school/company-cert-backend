@@ -16,13 +16,11 @@ exports.index = (req, res) => {
 
 // exports.store = create a new company
 exports.store = (req, res) => {
-  // return res.json({ data: 'NOT IMPLEMENTED: Create a new company' });
-  // res.send(req.body);
   db.collection('companies')
     .add({
-      name: req.body.name,
-      interview_date: req.body.interview_date,
-      // created_at: db.FieldValue.serverTimestamp()
+      name: req.body.companyName,
+      interview_date: req.body.interviewDate,
+      score: req.body.score,
       created_at: new Date().getTime()
     })
     .then(data => {
