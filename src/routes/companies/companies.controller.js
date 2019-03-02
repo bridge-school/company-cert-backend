@@ -21,6 +21,7 @@ exports.store = (req, res) => {
       name: req.body.companyName,
       interview_date: req.body.interviewDate,
       score: req.body.score,
+      checked_checklist_ids: req.body.checkedIds,
       created_at: new Date().getTime()
     })
     .then(data => {
