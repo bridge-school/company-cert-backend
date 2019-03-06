@@ -35,5 +35,9 @@ exports.store = (req, res) => {
 };
 
 // exports.show = get one company
+exports.show = (req, res) => {
+    return res.json({ bridge: 'now!' });
+}
+
 // exports.update = update a company
 // exports.destroy = delete a company
