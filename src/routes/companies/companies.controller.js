@@ -36,7 +36,15 @@ exports.store = (req, res) => {
 
 // exports.show = get one company
 exports.show = (req, res) => {
-    return res.json({ bridge: 'now!' });
+  db.collection('companies').doc(req.params.id)
+    .get()
+    .then(doc => console.log(doc.data()))
+    .then(data => {
+      res.json({
+        data
+      });
+    })
+    .catch(error => console.error('Error getting company data: ', error))
 }
 
 // exports.update = update a company
