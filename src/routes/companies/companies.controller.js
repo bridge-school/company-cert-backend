@@ -2,7 +2,6 @@ const db = require('../../db');
 
 // exports.index = get all the companies
 exports.index = (req, res) => {
-  // return res.json({ data: 'NOT IMPLEMENTED: Listing of companies' });
   db.collection('companies')
     .get()
     .then(snapshot => snapshot.docs.map(doc => doc.data()))
@@ -22,6 +21,8 @@ exports.store = (req, res) => {
       interview_date: req.body.interviewDate,
       score: req.body.score,
       checked_checklist_ids: req.body.checkedIds,
+      industry: req.body.industry,
+      tech: req.body.tech,
       created_at: new Date().getTime()
     })
     .then(data => {
