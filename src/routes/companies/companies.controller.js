@@ -38,12 +38,7 @@ exports.store = (req, res) => {
 exports.show = (req, res) => {
   db.collection('companies').doc(req.params.id)
     .get()
-    .then(doc => console.log(doc.data()))
-    .then(data => {
-      res.json({
-        data
-      });
-    })
+    .then(doc => res.json(doc.data()))
     .catch(error => console.error('Error getting company data: ', error))
 }
 
