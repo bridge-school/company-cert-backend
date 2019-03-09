@@ -4,7 +4,11 @@ const db = require('../../db');
 exports.index = (req, res) => {
   db.collection('companies')
     .get()
-    .then(snapshot => snapshot.docs.map(doc => doc.data()))
+    .then(snapshot =>
+      snapshot.docs.map(doc => {
+        return { ...doc.data(), id: doc.id };
+      })
+    )
     .then(data => {
       res.json({
         data
@@ -36,11 +40,12 @@ exports.store = (req, res) => {
 
 // exports.show = get one company
 exports.show = (req, res) => {
-  db.collection('companies').doc(req.params.id)
+  db.collection('companies')
+    .doc(req.params.id)
     .get()
     .then(doc => res.json(doc.data()))
-    .catch(error => console.error('Error getting company data: ', error))
-}
+    .catch(error => console.error('Error getting company data: ', error));
+};
 
 // exports.update = update a company
 // exports.destroy = delete a company
