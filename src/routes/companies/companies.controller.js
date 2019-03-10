@@ -27,7 +27,7 @@ exports.store = (req, res) => {
       checked_checklist_ids: req.body.checkedIds,
       industry: req.body.industry,
       tech: req.body.tech,
-      created_at: new Date().getTime()
+      created_at: new Date().toISOString()
     })
     .then(data => {
       // @TODO define structure for responses as a group

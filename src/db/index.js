@@ -9,5 +9,9 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+const settings = { timestampsInSnapshots: true };
+
+db.settings(settings);
+
 // import the db from any file to access firebase!
 module.exports = db;
