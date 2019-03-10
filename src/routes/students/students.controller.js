@@ -7,3 +7,21 @@ exports.index = (req, res) => {
     .then(data => res.json(data))
     .catch(err => console.error('Error getting student data', err));
 };
+
+exports.store = (req, res) => {
+  db.collection('students')
+    .add({
+      name: req.body.studentName,
+      interview_date: req.body.interviewDate,
+      industry: req.body.industry,
+      tech: req.body.tech,
+      created_at: new Date().toISOString()
+    })
+    .then(data => {
+      // @TODO define structure for responses as a group
+      res.json({
+        id: data.id
+      });
+    })
+    .catch(error => console.error('Error adding document: ', error));
+};
