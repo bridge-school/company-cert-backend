@@ -25,3 +25,11 @@ exports.store = (req, res) => {
     })
     .catch(error => console.error('Error adding document: ', error));
 };
+
+exports.show = (req, res) => {
+  db.collection('students')
+    .doc(req.params.id)
+    .get()
+    .then(doc => res.json(doc.data()))
+    .catch(error => console.error('Error getting student data: ', error));
+};
