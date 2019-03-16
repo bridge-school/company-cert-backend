@@ -2,7 +2,15 @@ const db = require('../../db');
 
 // exports.index = get all the companies
 exports.index = (req, res) => {
-  db.collection('companies')
+  // Create a reference to the companies collection
+  const companiesRef = db.collection('companies');
+
+  // Create a query against the collection.
+  let dbQuery = companiesRef;
+  if (req.query.filter === 'certified') {
+    dbQuery = companiesRef.where('score', '>=', 6);
+  }
+  dbQuery
     .get()
     .then(snapshot =>
       snapshot.docs.map(doc => {
