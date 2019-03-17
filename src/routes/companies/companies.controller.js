@@ -8,7 +8,7 @@ exports.index = (req, res) => {
   // Create a query against the collection.
   let dbQuery = companiesRef;
   if (req.query.filter === 'certified') {
-    dbQuery = companiesRef.where('score', '>=', 6);
+    dbQuery = companiesRef.where('score', '>=', 6); // Needs to be updated
   }
   dbQuery
     .get()
