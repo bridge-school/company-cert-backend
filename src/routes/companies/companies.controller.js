@@ -1,27 +1,39 @@
 const db = require('../../db');
 
+const frontendDataRespository = require('../frontend-data/frontend-data.repository');
+
 // exports.index = get all the companies
 exports.index = (req, res) => {
-  // Create a reference to the companies collection
-  const companiesRef = db.collection('companies');
+  const promise = new Promise((resolve, reject) => {
+    resolve(frontendDataRespository.getQuestionsCount());
+  });
 
-  // Create a query against the collection.
-  let dbQuery = companiesRef;
-  if (req.query.filter === 'certified') {
-    dbQuery = companiesRef.where('score', '>=', 6).orderBy('score', 'desc');
-  }
-  dbQuery
-    .orderBy('name', 'asc')
-    .get()
-    .then(snapshot =>
-      snapshot.docs.map(doc => {
-        return { ...doc.data(), id: doc.id };
-      })
-    )
-    .then(data => {
-      res.json({
-        data
-      });
+  promise
+    .then(count => {
+      const score = Math.round(count * 0.6);
+
+      // Create a reference to the companies collection
+      const companiesRef = db.collection('companies');
+
+      // Create a query against the collection.
+      let dbQuery = companiesRef;
+      if (req.query.filter === 'certified') {
+        dbQuery = companiesRef.where('score', '>=', score).orderBy('score', 'desc');
+      }
+      return dbQuery
+        .orderBy('name', 'asc')
+        .get()
+        .then(snapshot =>
+          snapshot.docs.map(doc => {
+            return { ...doc.data(), id: doc.id };
+          })
+        )
+        .then(data => {
+          res.json({
+            data
+          });
+        })
+        .catch(error => console.error('companies data error', error));
     })
     .catch(error => console.error('companies data error', error));
 };
