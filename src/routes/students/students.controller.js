@@ -14,7 +14,6 @@ exports.index = (req, res) => {
 exports.store = (req, res) => {
   // Save the results of a promise for later use
   let studentId;
-
   db.collection('students')
     .add({
       name: req.body.studentName,
@@ -60,19 +59,22 @@ exports.store = (req, res) => {
     .then(matches => {
       // Post message to Slack
       const numberOfMatches = matches.length;
+      const noun = numberOfMatches === 1 ? 'company' : 'companies';
 
-      axios
-        .post(process.env.SLACK_WEBHOOK, {
-          text: `${
-            req.body.studentName
-          } has been matched up with ${numberOfMatches} companies.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/students/${studentId}`
-        })
-        .then(response => {
-          console.log(response);
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      if (numberOfMatches > 0) {
+        axios
+          .post(process.env.SLACK_WEBHOOK, {
+            text: `*${
+              req.body.studentName
+            }* has been matched up with *${numberOfMatches} ${noun}*.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/students/${studentId}`
+          })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
     })
     .catch(error => console.error('Error adding document: ', error));
 };

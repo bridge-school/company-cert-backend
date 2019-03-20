@@ -81,19 +81,22 @@ exports.store = (req, res) => {
           .then(matches => {
             // Post message to Slack
             const numberOfMatches = matches.length;
+            const noun = numberOfMatches === 1 ? 'student' : 'students';
 
-            axios
-              .post(process.env.SLACK_WEBHOOK, {
-                text: `${
-                  req.body.companyName
-                } has been matched up with ${numberOfMatches} students.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/companies/${companyId}`
-              })
-              .then(response => {
-                console.log(response);
-              })
-              .catch(error => {
-                console.log(error);
-              });
+            if (numberOfMatches > 0) {
+              axios
+                .post(process.env.SLACK_WEBHOOK, {
+                  text: `*${
+                    req.body.companyName
+                  }* has been matched up with *${numberOfMatches} ${noun}*.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/companies/${companyId}`
+                })
+                .then(response => {
+                  console.log(response);
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+            }
           });
         // .catch(err => console.error('Error getting student data', err));
       }
