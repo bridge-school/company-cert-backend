@@ -1,6 +1,7 @@
 const axios = require('axios');
 const db = require('../../db');
 const matchStudentWithCompanies = require('../../matches');
+const frontendDataRespository = require('../frontend-data/frontend-data.repository');
 
 exports.index = (req, res) => {
   db.collection('students')
@@ -11,6 +12,9 @@ exports.index = (req, res) => {
 };
 
 exports.store = (req, res) => {
+  // Save the results of a promise for later use
+  let studentId;
+
   db.collection('students')
     .add({
       name: req.body.studentName,
@@ -20,18 +24,27 @@ exports.store = (req, res) => {
       created_at: new Date().toISOString()
     })
     .then(data => {
+      studentId = data.id;
       res.json({
-        id: data.id
+        id: studentId
       });
     })
     .then(() => {
-      // Get all certified companies --- refactor
+      // Get checklist questions count to calculate score
+      return frontendDataRespository.getQuestionsCount();
+    })
+    .then(count => {
+      // Get all certified companies
+      const score = Math.round(count * 0.6);
+
+      // Create a reference to the companies collection
       const companiesRef = db.collection('companies');
-      let dbQuery = companiesRef;
-      if (req.query.filter === 'certified') {
-        dbQuery = companiesRef.where('score', '>=', 6); // Needs to be updated
-      }
+
+      // Create a query against the collection
+      const dbQuery = companiesRef.where('score', '>=', score).orderBy('score', 'desc');
+
       return dbQuery
+        .orderBy('name', 'asc')
         .get()
         .then(snapshot =>
           snapshot.docs.map(doc => {
@@ -41,19 +54,18 @@ exports.store = (req, res) => {
         .then(companies => {
           // Run the matching algorithm
           const student = req.body;
-          console.log(req.body);
           return matchStudentWithCompanies.matches(student, companies);
         });
     })
     .then(data => {
       // Post message to Slack
-      console.log('The matches: ', data);
       const numberOfMatches = data.length;
+
       axios
         .post(process.env.SLACK_WEBHOOK, {
           text: `${
             req.body.studentName
-          } has been matched up with ${numberOfMatches} companies.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/`
+          } has been matched up with ${numberOfMatches} companies.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/students/${studentId}`
         })
         .then(response => {
           console.log(response);

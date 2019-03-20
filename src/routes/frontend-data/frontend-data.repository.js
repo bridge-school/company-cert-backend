@@ -1,7 +1,7 @@
 const db = require('../../db');
 
 exports.getQuestionsCount = () => {
-  // we want to get the questions count from the front_end_data collection
+  // Get the questions count from the front_end_data collection
   return db
     .collection('front_end_data')
     .doc('company_checklist')

@@ -2,7 +2,6 @@ const db = require('../../db');
 
 const frontendDataRespository = require('../frontend-data/frontend-data.repository');
 
-// exports.index = get all the companies
 exports.index = (req, res) => {
   const promise = new Promise((resolve, reject) => {
     resolve(frontendDataRespository.getQuestionsCount());
@@ -15,7 +14,7 @@ exports.index = (req, res) => {
       // Create a reference to the companies collection
       const companiesRef = db.collection('companies');
 
-      // Create a query against the collection.
+      // Create a query against the collection
       let dbQuery = companiesRef;
       if (req.query.filter === 'certified') {
         dbQuery = companiesRef.where('score', '>=', score).orderBy('score', 'desc');
@@ -38,7 +37,6 @@ exports.index = (req, res) => {
     .catch(error => console.error('companies data error', error));
 };
 
-// exports.store = create a new company
 exports.store = (req, res) => {
   db.collection('companies')
     .add({
@@ -51,7 +49,6 @@ exports.store = (req, res) => {
       created_at: new Date().toISOString()
     })
     .then(data => {
-      // @TODO define structure for responses as a group
       res.json({
         id: data.id
       });
@@ -59,7 +56,6 @@ exports.store = (req, res) => {
     .catch(error => console.error('Error adding document: ', error));
 };
 
-// exports.show = get one company
 exports.show = (req, res) => {
   db.collection('companies')
     .doc(req.params.id)
