@@ -23,8 +23,8 @@ exports.store = (req, res) => {
       tech: req.body.tech,
       created_at: new Date().toISOString()
     })
-    .then(data => {
-      studentId = data.id;
+    .then(student => {
+      studentId = student.id;
       res.json({
         id: studentId
       });
@@ -35,13 +35,13 @@ exports.store = (req, res) => {
     })
     .then(count => {
       // Get all certified companies
-      const score = Math.round(count * 0.6);
+      const minScore = Math.round(count * 0.6);
 
       // Create a reference to the companies collection
       const companiesRef = db.collection('companies');
 
       // Create a query against the collection
-      const dbQuery = companiesRef.where('score', '>=', score).orderBy('score', 'desc');
+      const dbQuery = companiesRef.where('score', '>=', minScore).orderBy('score', 'desc');
 
       return dbQuery
         .orderBy('name', 'asc')
@@ -57,9 +57,9 @@ exports.store = (req, res) => {
           return matchStudentWithCompanies.matches(student, companies);
         });
     })
-    .then(data => {
+    .then(matches => {
       // Post message to Slack
-      const numberOfMatches = data.length;
+      const numberOfMatches = matches.length;
 
       axios
         .post(process.env.SLACK_WEBHOOK, {
