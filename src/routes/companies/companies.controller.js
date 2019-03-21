@@ -1,32 +1,46 @@
+const axios = require('axios');
 const db = require('../../db');
+const matchCompanyWithStudents = require('../../matches');
+const frontendDataRespository = require('../frontend-data/frontend-data.repository');
 
-// exports.index = get all the companies
 exports.index = (req, res) => {
-  // Create a reference to the companies collection
-  const companiesRef = db.collection('companies');
+  const promise = new Promise((resolve, reject) => {
+    resolve(frontendDataRespository.getQuestionsCount());
+  });
 
-  // Create a query against the collection.
-  let dbQuery = companiesRef;
-  if (req.query.filter === 'certified') {
-    dbQuery = companiesRef.where('score', '>=', 6);
-  }
-  dbQuery
-    .get()
-    .then(snapshot =>
-      snapshot.docs.map(doc => {
-        return { ...doc.data(), id: doc.id };
-      })
-    )
-    .then(data => {
-      res.json({
-        data
-      });
+  promise
+    .then(count => {
+      const score = Math.round(count * 0.6);
+
+      // Create a reference to the companies collection
+      const companiesRef = db.collection('companies');
+
+      // Create a query against the collection
+      let dbQuery = companiesRef;
+      if (req.query.filter === 'certified') {
+        dbQuery = companiesRef.where('score', '>=', score).orderBy('score', 'desc');
+      }
+      return dbQuery
+        .orderBy('name', 'asc')
+        .get()
+        .then(snapshot =>
+          snapshot.docs.map(doc => {
+            return { ...doc.data(), id: doc.id };
+          })
+        )
+        .then(data => {
+          res.json({
+            data
+          });
+        })
+        .catch(error => console.error('companies data error', error));
     })
     .catch(error => console.error('companies data error', error));
 };
 
-// exports.store = create a new company
 exports.store = (req, res) => {
+  // Save the results of a promise for later use
+  let companyId;
   db.collection('companies')
     .add({
       name: req.body.companyName,
@@ -37,16 +51,59 @@ exports.store = (req, res) => {
       tech: req.body.tech,
       created_at: new Date().toISOString()
     })
-    .then(data => {
-      // @TODO define structure for responses as a group
+    .then(company => {
+      companyId = company.id;
       res.json({
-        id: data.id
+        id: companyId
       });
+    })
+    .then(() => {
+      // Get checklist questions count to calculate minimum score
+      return frontendDataRespository.getQuestionsCount();
+    })
+    .then(count => {
+      const minScore = Math.round(count * 0.6);
+
+      if (req.body.score >= minScore) {
+        // Get students for matching
+        db.collection('students')
+          .get()
+          .then(snapshot =>
+            snapshot.docs.map(doc => {
+              return { ...doc.data(), id: doc.id };
+            })
+          )
+          .then(students => {
+            // Run the matching algorithm
+            const company = req.body;
+            return matchCompanyWithStudents.matches(company, students);
+          })
+          .then(matches => {
+            // Post message to Slack
+            const numberOfMatches = matches.length;
+            const noun = numberOfMatches === 1 ? 'student' : 'students';
+
+            if (numberOfMatches > 0) {
+              axios
+                .post(process.env.SLACK_WEBHOOK, {
+                  text: `*${
+                    req.body.companyName
+                  }* has been matched up with *${numberOfMatches} ${noun}*.\nView the matches here: http://company-cert-frontend.bridgeschoolapp.io/companies/${companyId}`
+                })
+                .then(response => {
+                  console.log(response);
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+            }
+          });
+        // .catch(err => console.error('Error getting student data', err));
+      }
     })
     .catch(error => console.error('Error adding document: ', error));
 };
 
-// exports.show = get one company
 exports.show = (req, res) => {
   db.collection('companies')
     .doc(req.params.id)
